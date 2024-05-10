@@ -1,0 +1,73 @@
+within mtpPackage;
+
+model HKTYPA
+
+  replaceable package Medium = AixLib.Media.Water;
+
+  replaceable package Medium1 =
+    Modelica.Media.Interfaces.PartialMedium "Medium 1 in the component"
+      annotation (choices(
+        choice(redeclare package Medium = AixLib.Media.Air "Moist air"),
+        choice(redeclare package Medium = AixLib.Media.Water "Water"),
+        choice(redeclare package Medium =
+            AixLib.Media.Antifreeze.PropyleneGlycolWater (
+          property_T=293.15,
+          X_a=0.40)
+          "Propylene glycol water, 40% mass fraction")));
+  replaceable package Medium2 =
+    Modelica.Media.Interfaces.PartialMedium "Medium 2 in the component"
+      annotation (choices(
+        choice(redeclare package Medium = AixLib.Media.Air "Moist air"),
+        choice(redeclare package Medium = AixLib.Media.Water "Water"),
+        choice(redeclare package Medium =
+            AixLib.Media.Antifreeze.PropyleneGlycolWater (
+          property_T=293.15,
+          X_a=0.40)
+          "Propylene glycol water, 40% mass fraction")));
+
+  parameter Boolean allowFlowReversal1 = true
+    "= false to simplify equations, assuming, but not enforcing, no flow reversal for medium 1"
+    annotation(Dialog(tab="Assumptions"), Evaluate=true);
+  parameter Boolean allowFlowReversal2 = true
+    "= false to simplify equations, assuming, but not enforcing, no flow reversal for medium 2"
+    annotation(Dialog(tab="Assumptions"), Evaluate=true);
+
+
+
+
+  Modelica.Fluid.Interfaces.FluidPort_a port_a1(
+    redeclare final package Medium = Medium1,
+    m_flow(min=if allowFlowReversal1 then -Modelica.Constants.inf else 0),
+    h_outflow(start = Medium1.h_default, nominal = Medium1.h_default))
+    "Fluid connector a1 (positive design flow direction is from port_a1 to port_b1)" annotation(
+    Placement(visible = true, transformation(origin = {-206, 96}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-206, 96}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_a port_a2(
+                     redeclare final package Medium = Medium2,
+                     m_flow(min=if allowFlowReversal2 then -Modelica.Constants.inf else 0),
+                     h_outflow(start = Medium2.h_default, nominal = Medium2.h_default))
+    "Fluid connector a2 (positive design flow direction is from port_a2 to port_b2)" annotation(
+    Placement(visible = true, transformation(origin = {174, -16}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {210, -42}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b1(
+                     redeclare final package Medium = Medium1,
+                     m_flow(max=if allowFlowReversal1 then +Modelica.Constants.inf else 0),
+                     h_outflow(start = Medium1.h_default, nominal = Medium1.h_default))
+    "Fluid connector b1 (positive design flow direction is from port_a1 to port_b1)" annotation(
+    Placement(visible = true, transformation(origin = {186, 100}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {186, 100}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b2(
+                     redeclare final package Medium = Medium2,
+                     m_flow(max=if allowFlowReversal2 then +Modelica.Constants.inf else 0),
+                     h_outflow(start = Medium2.h_default, nominal = Medium2.h_default))
+    "Fluid connector b2 (positive design flow direction is from port_a2 to port_b2)" annotation(
+    Placement(visible = true, transformation(origin = {-188, -10}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-210, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+equation
+  connect(port_b2, port_a2) annotation(
+    Line(points = {{-188, -10}, {174, -10}, {174, -16}}));
+  connect(port_b1, port_a1) annotation(
+    Line(points = {{186, 100}, {-206, 100}, {-206, 96}}));
+  connect(port_b1, port_a2) annotation(
+    Line(points = {{186, 100}, {268, 100}, {268, -16}, {174, -16}}));
+
+annotation(
+    Diagram(coordinateSystem(extent = {{-200, -200}, {200, 200}})),
+    Icon(coordinateSystem(extent = {{-200, -200}, {200, 200}})));
+end HKTYPA;

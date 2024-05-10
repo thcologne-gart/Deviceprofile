@@ -1,0 +1,6 @@
+within mtpPackage;
+
+model g
+equation
+
+end g;

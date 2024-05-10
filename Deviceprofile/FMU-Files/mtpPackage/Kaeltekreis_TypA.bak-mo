@@ -1,0 +1,207 @@
+within mtpPackage;
+
+model Kaeltekreis_TypA
+  "Modell für Kältekreis Typ A-Drosselschaltung"
+  extends AixLib.Systems.HydraulicModules.BaseClasses.PartialHydraulicModule;
+  
+  
+  //-----parameters-----
+  parameter Modelica.Units.SI.Volume vol=0.0005 "Mixing Volume"
+    annotation (Dialog(tab="Advanced"));
+
+  //----pipe 1-----
+  AixLib.Fluid.FixedResistances.GenericPipe pipe1(
+    redeclare package Medium = Medium,
+    pipeModel=pipeModel,
+    T_start=T_start,
+    final m_flow_nominal=m_flow_nominal,
+    final allowFlowReversal=allowFlowReversal,
+    length=length,
+    parameterPipe=parameterPipe,
+    parameterIso=parameterIso,
+    final hCon=hCon,
+    final energyDynamics=energyDynamics,
+    final massDynamics=massDynamics) annotation(
+    Placement(visible = true, transformation(origin = {-30, 20}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  
+  //----pipe 2-----
+  AixLib.Fluid.FixedResistances.GenericPipe pipe2(
+    redeclare package Medium = Medium,
+    pipeModel=pipeModel,
+    T_start=T_start,
+    final m_flow_nominal=m_flow_nominal,
+    final allowFlowReversal=allowFlowReversal,
+    length=length,
+    parameterPipe=parameterPipe,
+    parameterIso=parameterIso,
+    final hCon=hCon,
+    final energyDynamics=energyDynamics,
+    final massDynamics=massDynamics)
+    annotation(
+    Placement(visible = true, transformation(origin = {30, 20}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  
+  //-----pipe 3-----
+  AixLib.Fluid.FixedResistances.GenericPipe pipe3(
+    redeclare package Medium = Medium,
+    pipeModel=pipeModel,
+    T_start=T_start,
+    final m_flow_nominal=m_flow_nominal,
+    final allowFlowReversal=allowFlowReversal,
+    length=length,
+    parameterPipe=parameterPipe,
+    parameterIso=parameterIso,
+    final hCon=hCon,
+    final energyDynamics=energyDynamics,
+    final massDynamics=massDynamics)
+    annotation(
+    Placement(visible = true, transformation(origin = {50, -60}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+  
+  //-----hydraulic balancing valve-----
+  AixLib.Fluid.FixedResistances.PressureDrop hydraulic_balancing(
+    redeclare package Medium = Medium,
+    final m_flow_nominal=m_flow_nominal,
+    final allowFlowReversal=allowFlowReversal)
+    annotation(
+    Placement(visible = true, transformation(origin = {20, -60}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+  
+  //-----pipe 4-----
+  AixLib.Fluid.FixedResistances.GenericPipe pipe4(
+    redeclare package Medium = Medium,
+    pipeModel=pipeModel,
+    T_start=T_start,
+    final m_flow_nominal=m_flow_nominal,
+    final allowFlowReversal=allowFlowReversal,
+    length=length,
+    parameterPipe=parameterPipe,
+    parameterIso=parameterIso,
+    final hCon=hCon,
+    final energyDynamics=energyDynamics,
+    final massDynamics=massDynamics)
+    annotation(
+    Placement(visible = true, transformation(origin = {70, -100}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));  
+  
+  //-----valves-----
+  AixLib.Fluid.MixingVolumes.MixingVolume junc4(
+    redeclare package Medium = Medium,
+    final massDynamics=massDynamics,
+    T_start=T_start,
+    nPorts=3,
+    final m_flow_nominal=m_flow_nominal,
+    final V=vol,
+    final energyDynamics=energyDynamics)
+    annotation(
+    Placement(visible = true, transformation(origin = {40, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+
+  AixLib.Fluid.Actuators.Valves.TwoWayTable valve1(
+    CvData=AixLib.Fluid.Types.CvTypes.Kv,
+    redeclare package Medium = Medium,
+    final m_flow_nominal=m_flow_nominal,
+    final allowFlowReversal=allowFlowReversal,
+    Kv=Kv,
+    order=1,
+    init=Modelica.Blocks.Types.Init.InitialState,
+    y_start=0,
+    flowCharacteristics=AixLib.Fluid.Actuators.Valves.Data.Linear())
+  annotation(
+    Placement(visible = true, transformation(origin = {10, -110}, extent = {{10, 10}, {-10, -10}}, rotation = 0)));
+  
+  AixLib.Fluid.Actuators.Valves.TwoWayTable valve2(
+    CvData=AixLib.Fluid.Types.CvTypes.Kv,
+    redeclare package Medium = Medium,
+    final m_flow_nominal=m_flow_nominal,
+    final allowFlowReversal=allowFlowReversal,
+    Kv=Kv,
+    order=1,
+    init=Modelica.Blocks.Types.Init.InitialState,
+    y_start=0,
+    flowCharacteristics=AixLib.Fluid.Actuators.Valves.Data.Linear())
+    annotation(
+    Placement(visible = true, transformation(origin = {10, -150}, extent = {{10, 10}, {-10, -10}}, rotation = 0)));
+
+  AixLib.Fluid.MixingVolumes.MixingVolume junc5(
+    redeclare package Medium = Medium,
+    final massDynamics=massDynamics,
+    T_start=T_start,
+    nPorts=3,
+    final m_flow_nominal=m_flow_nominal,
+    final V=vol,
+    final energyDynamics=energyDynamics)
+    annotation(
+    Placement(visible = true, transformation(origin = {-20, -100}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));  
+    
+  //-----pipe 5-----
+  AixLib.Fluid.FixedResistances.GenericPipe pipe5(
+    redeclare package Medium = Medium,
+    pipeModel=pipeModel,
+    T_start=T_start,
+    final m_flow_nominal=m_flow_nominal,
+    final allowFlowReversal=allowFlowReversal,
+    length=length,
+    parameterPipe=parameterPipe,
+    parameterIso=parameterIso,
+    final hCon=hCon,
+    final energyDynamics=energyDynamics,
+    final massDynamics=massDynamics)
+    annotation(
+    Placement(visible = true, transformation(origin = {-60, -60}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+  //connetions
+  mtpPackage.HydraulicValveBus hydraulicValveBus annotation(
+    Placement(visible = true, transformation(origin = {0, 120}, extent = {{-20, -20}, {20, 20}}, rotation = 0), iconTransformation(origin = {0, 121}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
+equation
+  connect(senT_b2.port_a, pipe5.port_b) annotation(
+    Line(points = {{-78, -60}, {-70, -60}}, color = {0, 127, 255}));
+  connect(pipe5.heatPort, prescribedTemperature.port) annotation(
+    Line(points = {{-60, -50}, {-60, -20}, {32, -20}}, color = {191, 0, 0}));
+  connect(pipe2.heatPort, prescribedTemperature.port) annotation(
+    Line(points = {{30, 10}, {30, 0}, {20, 0}, {20, -20}, {32, -20}}, color = {191, 0, 0}));
+  connect(pipe3.heatPort, prescribedTemperature.port) annotation(
+    Line(points = {{50, -50}, {50, -40}, {20, -40}, {20, -20}, {32, -20}}, color = {191, 0, 0}));
+  connect(hydraulic_balancing.port_a, pipe3.port_b) annotation(
+    Line(points = {{30, -60}, {40, -60}}, color = {0, 127, 255}));
+  connect(pipe3.port_a, senT_a2.port_b) annotation(
+    Line(points = {{60, -60}, {72, -60}}, color = {0, 127, 255}));
+  connect(pipe2.port_b, senT_b1.port_a) annotation(
+    Line(points = {{40, 20}, {88, 20}}, color = {0, 127, 255}));
+  connect(hydraulic_balancing.port_b, pipe4.port_a) annotation(
+    Line(points = {{10, -60}, {0, -60}, {0, -80}, {80, -80}, {80, -100}}, color = {0, 127, 255}));
+  connect(pipe4.port_b, junc4.ports[1]) annotation(
+    Line(points = {{60, -100}, {54, -100}, {54, -110}, {40, -110}}, color = {0, 127, 255}));
+  connect(pipe4.heatPort, prescribedTemperature.port) annotation(
+    Line(points = {{70, -90}, {70, -84}, {-6, -84}, {-6, -20}, {32, -20}}, color = {191, 0, 0}));
+  connect(junc4.ports[2], valve1.port_a) annotation(
+    Line(points = {{40, -110}, {20, -110}}, color = {0, 127, 255}));
+  connect(junc4.ports[3], valve2.port_a) annotation(
+    Line(points = {{40, -110}, {40, -150}, {20, -150}}, color = {0, 127, 255}));
+  connect(valve2.port_b, junc5.ports[1]) annotation(
+    Line(points = {{0, -150}, {-20, -150}, {-20, -110}}, color = {0, 127, 255}));
+  connect(pipe5.port_a, junc5.ports[2]) annotation(
+    Line(points = {{-50, -60}, {-40, -60}, {-40, -110}, {-20, -110}}, color = {0, 127, 255}));
+  connect(valve1.port_b, junc5.ports[3]) annotation(
+    Line(points = {{0, -110}, {-20, -110}}, color = {0, 127, 255}));
+  connect(pipe1.port_b, pipe2.port_a) annotation(
+    Line(points = {{-20, 20}, {20, 20}}, color = {0, 127, 255}));
+  connect(pipe1.heatPort, prescribedTemperature.port) annotation(
+    Line(points = {{-30, 10}, {-30, -20}, {32, -20}}, color = {191, 0, 0}));
+  connect(senT_a1.port_b, pipe1.port_a) annotation(
+    Line(points = {{-88, 20}, {-40, 20}}, color = {0, 127, 255}));
+  connect(PT1_b2.y, hydraulicValveBus.TRtrnOutMea) annotation(
+    Line(points = {{-120, -30}, {-122, -30}, {-122, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(PT1_a2.y, hydraulicValveBus.TRtrnInMea) annotation(
+    Line(points = {{122, -30}, {130, -30}, {130, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(VFSen_out.V_flow, hydraulicValveBus.VFlowInMea) annotation(
+    Line(points = {{-110, 40}, {-112, 40}, {-112, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(VFSen_in.V_flow, hydraulicValveBus.VFlowOutMea) annotation(
+    Line(points = {{112, 42}, {116, 42}, {116, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(PT1_a1.y, hydraulicValveBus.TFwrdInMea) annotation(
+    Line(points = {{-70, 82}, {-70, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(PT1_b1.y, hydraulicValveBus.TFwrdOutMea) annotation(
+    Line(points = {{70, 82}, {70, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(valve1.y, hydraulicValveBus.valve1Set) annotation(
+    Line(points = {{10, -122}, {10, -130}, {-122, -130}, {-122, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(valve2.y, hydraulicValveBus.valve2Set) annotation(
+    Line(points = {{10, -162}, {10, -170}, {-122, -170}, {-122, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(valve1.y_actual, hydraulicValveBus.valve1Mea) annotation(
+    Line(points = {{6, -116}, {-122, -116}, {-122, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(valve2.y_actual, hydraulicValveBus.valve2Mea) annotation(
+    Line(points = {{6, -156}, {-122, -156}, {-122, 120}, {0, 120}}, color = {0, 0, 127}));
+end Kaeltekreis_TypA;

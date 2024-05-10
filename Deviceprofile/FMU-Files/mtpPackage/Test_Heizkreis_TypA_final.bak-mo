@@ -1,0 +1,24 @@
+within mtpPackage;
+
+model Test_Heizkreis_TypA_final
+  //-----medium-----
+  package Medium = AixLib.Media.Water annotation(
+    choicesAllMatching = true);
+  //-----boundarys-----
+  AixLib.Fluid.Sources.Boundary_pT boundaryIn(redeclare package Medium = Medium, T = 283, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {-90, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  AixLib.Fluid.Sources.Boundary_pT boundaryOut(redeclare package Medium = Medium, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {-90, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  //-----heating circuit typ A-----
+  mtpPackage.Heizkreis_TypA_final heizkreis_TypA_final(redeclare package Medium = Medium, T_start = 293.15, m_flow_nominal = 1) annotation(
+    Placement(visible = true, transformation(origin = {0, 0}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
+equation
+  connect(boundaryOut.ports[1], heizkreis_TypA_final.port_b2) annotation(
+    Line(points = {{-80, -30}, {-50, -30}, {-50, -10}, {-20, -10}}, color = {0, 127, 255}));
+  connect(boundaryIn.ports[1], heizkreis_TypA_final.port_a1) annotation(
+    Line(points = {{-80, 30}, {-50, 30}, {-50, 10}, {-20, 10}}, color = {0, 127, 255}));
+  annotation(
+    experiment(StartTime = 0, StopTime = 1000, Tolerance = 1e-06, Interval = 0.002),
+    __OpenModelica_commandLineOptions = "--matchingAlgorithm=PFPlusExt --indexReductionMethod=dynamicStateSelection -d=initialization,NLSanalyticJacobian",
+    __OpenModelica_simulationFlags(lv = "LOG_STATS", s = "dassl"));
+end Test_Heizkreis_TypA_final;

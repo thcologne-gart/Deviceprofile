@@ -1,0 +1,311 @@
+within mtpPackage;
+
+model RLTTypA1 "Generic air-handling unit with heat recovery system"
+  replaceable package Medium1 = Modelica.Media.Interfaces.PartialCondensingGases "Medium in air canal in the component" annotation(
+    choices(choice(redeclare package Medium = AixLib.Media.Air "Moist air")));
+  replaceable package Medium2 = Modelica.Media.Interfaces.PartialMedium "Medium in hydraulic circuits" annotation(
+    choices(choice(redeclare package Medium = AixLib.Media.Air "Moist air"), choice(redeclare package Medium = AixLib.Media.Water "Water"), choice(redeclare package Medium = AixLib.Media.Antifreeze.PropyleneGlycolWater(property_T = 293.15, X_a = 0.40) "Propylene glycol water, 40% mass fraction")));
+  parameter Modelica.Units.SI.Time tau = 15 "Time Constant for PT1 behavior of temperature sensors" annotation(
+    Dialog(tab = "Advanced"));
+  parameter Modelica.Fluid.Types.Dynamics energyDynamics = Modelica.Fluid.Types.Dynamics.DynamicFreeInitial "Type of energy balance: dynamic (3 initialization options) or steady state" annotation(
+    Evaluate = true,
+    Dialog(tab = "Dynamics", group = "Equations"));
+  parameter Modelica.Fluid.Types.Dynamics massDynamics = Modelica.Fluid.Types.Dynamics.DynamicFreeInitial "Type of mass balance: dynamic (3 initialization options) or steady state" annotation(
+    Evaluate = true,
+    Dialog(tab = "Dynamics", group = "Equations"));
+  parameter AixLib.Fluid.Movers.BaseClasses.Characteristics.efficiencyParameters hydraulicEfficiency(V_flow = {0}, eta = {0.7}) "Hydraulic efficiency of the fans" annotation(
+    Dialog(group = "Fans"));
+  parameter Modelica.Units.SI.Temperature T_amb = 293.15 "Ambient temperature";
+  parameter Modelica.Units.SI.MassFlowRate m1_flow_nominal = 1 "Nominal mass flow rate in air canal";
+  parameter Modelica.Units.SI.MassFlowRate m2_flow_nominal = 0.5 "Nominal mass flow rate in hydraulics";
+  parameter Modelica.Units.SI.Temperature T_start = 303.15 "Initialization temperature" annotation(
+    Dialog(tab = "Advanced", group = "Initialization"));
+  parameter Boolean usePreheater = true "If true, a preaheater is used" annotation(
+    choices(checkBox = true),
+    Dialog(group = "Preheater"));
+  parameter Boolean useHumidifierRet = true "If true, a humidifier in return canal is used" annotation(
+    choices(checkBox = true),
+    Dialog(group = "Humidifiers"));
+  parameter Boolean useHumidifier = true "If true, a humidifier in supply canal is used" annotation(
+    choices(checkBox = true),
+    Dialog(group = "Humidifiers"));
+  parameter Boolean allowFlowReversal1 = true "= false to simplify equations, assuming, but not enforcing, no flow reversal for medium in air canal" annotation(
+    Dialog(tab = "Assumptions"),
+    Evaluate = true);
+  parameter Boolean allowFlowReversal2 = true "= false to simplify equations, assuming, but not enforcing, no flow reversal for medium in hydraulics" annotation(
+    Dialog(tab = "Assumptions"),
+    Evaluate = true);
+  Modelica.Fluid.Interfaces.FluidPort_a port_a1(redeclare package Medium = Medium1, h_outflow(start = Medium1.h_default, nominal = Medium1.h_default)) "Fluid connector a1 (positive design flow direction is from port_a1 to port_b1)" annotation(
+    Placement(visible = true, transformation(origin = {-30, 0}, extent = {{-230, -10}, {-210, 10}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{-230, -10}, {-210, 10}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b1(redeclare package Medium = Medium1, h_outflow(start = Medium1.h_default, nominal = Medium1.h_default)) "Fluid connector b1 (positive design flow direction is from port_a1 to port_b1)" annotation(
+    Placement(visible = true, transformation(origin = {80, 0}, extent = {{230, -10}, {210, 10}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{232, -10}, {212, 10}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_a port_a2(redeclare package Medium = Medium1, h_outflow(start = Medium1.h_default, nominal = Medium1.h_default)) "Fluid connector a2 (positive design flow direction is from port_a2 to port_b2)" annotation(
+    Placement(visible = true, transformation(origin = {80, 0}, extent = {{210, 70}, {230, 90}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{212, 70}, {232, 90}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b2(redeclare package Medium = Medium1, h_outflow(start = Medium1.h_default, nominal = Medium1.h_default)) "Fluid connector b2 (positive design flow direction is from port_a2 to port_b2)" annotation(
+    Placement(visible = true, transformation(origin = {-30, 0}, extent = {{-210, 70}, {-230, 90}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{-210, 70}, {-230, 90}}, rotation = 0)));
+  AixLib.Fluid.HeatExchangers.DynamicHX dynamicHX(redeclare package Medium1 = Medium1, redeclare package Medium2 = Medium1, final allowFlowReversal1 = allowFlowReversal1, final allowFlowReversal2 = allowFlowReversal1, final m1_flow_nominal = m1_flow_nominal, final m2_flow_nominal = m1_flow_nominal, dp1_nominal = 10, dp2_nominal = 10, energyDynamics = energyDynamics, massDynamics = massDynamics, final T1_start = T_start, final T2_start = T_start, dT_nom = 1, Q_nom = 1000*m1_flow_nominal) "Heat recovery heat exchanger" annotation(
+    Placement(visible = true, transformation(origin = {-60, 0}, extent = {{-20, -14}, {-60, 54}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_a port_a3(redeclare package Medium = Medium2) if usePreheater "Fluid connector a3 (positive design flow direction is from port_a3 to port_b3)" annotation(
+    Placement(visible = true, transformation(origin = {120, 0}, extent = {{-170, -110}, {-150, -90}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{-170, -110}, {-150, -90}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b3(redeclare package Medium = Medium2) if usePreheater "Fluid connector b3 (positive design flow direction is from port_a3 to port_b3)" annotation(
+    Placement(visible = true, transformation(origin = {60, 0}, extent = {{-130, -110}, {-110, -90}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{-130, -110}, {-110, -90}}, rotation = 0)));
+  AixLib.Fluid.Actuators.Dampers.Exponential flapOda(redeclare package Medium = Medium1, final allowFlowReversal = allowFlowReversal1, final m_flow_nominal = m1_flow_nominal, final dpDamper_nominal = dpDamper_nominal) "Supply air flap" annotation(
+    Placement(visible = true, transformation(origin = {-40, 0}, extent = {{-190, -10}, {-170, 10}}, rotation = 0)));
+  AixLib.Fluid.FixedResistances.PressureDrop filterOda(redeclare package Medium = Medium1, dp_nominal = 10, m_flow_nominal = m1_flow_nominal) annotation(
+    Placement(visible = true, transformation(origin = {-180, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.RelativePressure senRelPreFilterOda(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {-180, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.TemperatureTwoPort senTOda(redeclare package Medium = Medium1, T_start = T_start, allowFlowReversal = allowFlowReversal1, m_flow_nominal = m1_flow_nominal) annotation(
+    Placement(visible = true, transformation(origin = {-140, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  AixLib.Fluid.Actuators.Dampers.Exponential flapRet(redeclare package Medium = Medium1, final allowFlowReversal = allowFlowReversal1, final m_flow_nominal = m1_flow_nominal, final dpDamper_nominal = dpDamper_nominal) "Return air flap" annotation(
+    Placement(visible = true, transformation(origin = {80, 0}, extent = {{200, 70}, {180, 90}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_a port_a4(redeclare package Medium = Medium2) "Fluid connector a2 (positive design flow direction is from port_a2 to port_b2)" annotation(
+    Placement(visible = true, transformation(origin = {0, 0}, extent = {{-10, -110}, {10, -90}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{-10, -110}, {10, -90}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b4(redeclare package Medium = Medium2) "Fluid connector b2 (positive design flow direction is from port_a2 to port_b2)" annotation(
+    Placement(visible = true, transformation(origin = {-60, 0}, extent = {{30, -110}, {50, -90}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{30, -110}, {50, -90}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_a port_a5(redeclare package Medium = Medium2) "Fluid connector a2 (positive design flow direction is from port_a2 to port_b2)" annotation(
+    Placement(visible = true, transformation(origin = {-40, 0}, extent = {{70, -110}, {90, -90}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{70, -110}, {90, -90}}, rotation = 0)));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b5(redeclare package Medium = Medium2) "Fluid connector b2 (positive design flow direction is from port_a2 to port_b2)" annotation(
+    Placement(visible = true, transformation(origin = {-100, 0}, extent = {{110, -110}, {130, -90}}, rotation = 0), iconTransformation(origin = {0, 0}, extent = {{108, -110}, {128, -90}}, rotation = 0)));
+  AixLib.Fluid.Movers.FlowControlled_dp fanSup(redeclare package Medium = Medium1, energyDynamics = energyDynamics, T_start = T_start, final allowFlowReversal = allowFlowReversal1, final m_flow_nominal = m1_flow_nominal, redeclare AixLib.Fluid.Movers.Data.Generic per(hydraulicEfficiency = hydraulicEfficiency, motorEfficiency(eta = {0.95})), final inputType = AixLib.Fluid.Types.InputType.Continuous) "Supply air fan" annotation(
+    Placement(visible = true, transformation(origin = {-96, 0}, extent = {{156, -10}, {176, 10}}, rotation = 0)));
+  AixLib.Fluid.Movers.FlowControlled_dp fanRet(redeclare package Medium = Medium1, energyDynamics = energyDynamics, T_start = T_start, final allowFlowReversal = allowFlowReversal1, final m_flow_nominal = m1_flow_nominal, redeclare AixLib.Fluid.Movers.Data.Generic per(hydraulicEfficiency = hydraulicEfficiency, motorEfficiency(eta = {0.95})), final inputType = AixLib.Fluid.Types.InputType.Continuous) "Return air fan" annotation(
+    Placement(visible = true, transformation(origin = {120, 80}, extent = {{-10, 10}, {10, -10}}, rotation = 180)));
+  AixLib.Fluid.Humidifiers.GenericHumidifier_u humidifier(redeclare package Medium = Medium1, final allowFlowReversal = allowFlowReversal1, final m_flow_nominal = m1_flow_nominal, energyDynamics = energyDynamics, T_start = T_start) if useHumidifier "Steam or adiabatic humdifier in supply canal" annotation(
+    Placement(visible = true, transformation(origin = {60, 0}, extent = {{130, -10}, {150, 10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.TemperatureTwoPort senTRet(redeclare package Medium = Medium1, final allowFlowReversal = allowFlowReversal1, final m_flow_nominal = m1_flow_nominal, T_start = T_start) "Return air temperature sensor" annotation(
+    Placement(visible = true, transformation(origin = {-90, 0}, extent = {{160, 70}, {140, 90}}, rotation = 0)));
+  AixLib.Fluid.Sensors.TemperatureTwoPort senTExh(redeclare package Medium = Medium1, final allowFlowReversal = allowFlowReversal1, final m_flow_nominal = m1_flow_nominal, T_start = T_start) "Exhaust air temperature sensor" annotation(
+    Placement(visible = true, transformation(origin = {-30, 0}, extent = {{-140, 70}, {-160, 90}}, rotation = 0)));
+  AixLib.Fluid.Sensors.TemperatureTwoPort senTSup(redeclare package Medium = Medium1, final allowFlowReversal = allowFlowReversal1, final m_flow_nominal = m1_flow_nominal, T_start = T_start) "Supply air temperature sensor" annotation(
+    Placement(visible = true, transformation(origin = {240, 0}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+  AixLib.Fluid.Sensors.RelativeHumidityTwoPort senRelHumSup(redeclare package Medium = Medium1, final allowFlowReversal = allowFlowReversal1, m_flow_nominal = m1_flow_nominal) "Supply air humidity sensor" annotation(
+    Placement(visible = true, transformation(origin = {34, 0}, extent = {{180, -6}, {192, 6}}, rotation = 0)));
+  parameter Modelica.Units.SI.PressureDifference dpDamper_nominal = 1 "Pressure drop of fully open dampers at nominal mass flow rate";
+  AixLib.Fluid.HeatExchangers.DynamicHX cooler(redeclare package Medium1 = Medium1, redeclare package Medium2 = Medium2, Q_nom = 1000*m1_flow_nominal, T1_start = T_start, T2_start = T_start, allowFlowReversal1 = allowFlowReversal1, allowFlowReversal2 = allowFlowReversal2, dT_nom = 1, dp1_nominal = 10, dp2_nominal = 10, energyDynamics = energyDynamics, m1_flow_nominal = m1_flow_nominal, m2_flow_nominal = m2_flow_nominal, massDynamics = massDynamics, tau1 = 2, tau2 = 8, tau_C = 10) annotation(
+    Placement(visible = true, transformation(origin = {-10, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  AixLib.Fluid.HeatExchangers.DynamicHX reHeater(redeclare package Medium1 = Medium1, redeclare package Medium2 = Medium2, Q_nom = 1000*m1_flow_nominal, T1_start = T_start, T2_start = T_start, allowFlowReversal1 = allowFlowReversal1, allowFlowReversal2 = allowFlowReversal2, dT_nom = 1, dp1_nominal = 10, dp2_nominal = 10, energyDynamics = energyDynamics, m1_flow_nominal = m1_flow_nominal, m2_flow_nominal = m2_flow_nominal, massDynamics = massDynamics, tau1 = 2, tau2 = 8, tau_C = 10) annotation(
+    Placement(visible = true, transformation(origin = {30, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  AixLib.Fluid.HeatExchangers.DynamicHX preHeater(redeclare package Medium1 = Medium1, redeclare package Medium2 = Medium2, Q_nom = 1000*m1_flow_nominal, T1_start = T_start, T2_start = T_start, allowFlowReversal1 = allowFlowReversal1, allowFlowReversal2 = allowFlowReversal2, dT_nom = 1, dp1_nominal = 10, dp2_nominal = 10, energyDynamics = energyDynamics, m1_flow_nominal = m1_flow_nominal, m2_flow_nominal = m2_flow_nominal, massDynamics = massDynamics, tau1 = 2, tau2 = 8, tau_C = 10) annotation(
+    Placement(visible = true, transformation(origin = {-50, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  mtpPackage.GenericAHUBus_extended genericAHUBus_extended annotation(
+    Placement(visible = true, transformation(origin = {0, 120}, extent = {{-20, -20}, {20, 20}}, rotation = 0), iconTransformation(origin = {0, 154}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
+  AixLib.Fluid.Actuators.Dampers.Exponential flapEha(redeclare package Medium = Medium1, allowFlowReversal = allowFlowReversal1, dpDamper_nominal = dpDamper_nominal, m_flow_nominal = m1_flow_nominal) annotation(
+    Placement(visible = true, transformation(origin = {-410, 0}, extent = {{200, 70}, {180, 90}}, rotation = 0)));
+  AixLib.Fluid.Actuators.Dampers.Exponential flapSup(redeclare package Medium = Medium1, allowFlowReversal = allowFlowReversal1, dpDamper_nominal = dpDamper_nominal, m_flow_nominal = m1_flow_nominal) annotation(
+    Placement(visible = true, transformation(origin = {450, 0}, extent = {{-190, -10}, {-170, 10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.Temperature senTempSup1(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {-70, -30}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.Temperature senTempSup2(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {-30, -30}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.Temperature senTempSup3(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {10, -30}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.Temperature senTempSup4(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {50, -30}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.Temperature senTempSup5(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {90, -30}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.EnthalpyFlowRate senEntFloSup(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {110, 0}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.Pressure senPreSup(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {130, -30}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+  AixLib.Fluid.FixedResistances.PressureDrop filterSup(redeclare package Medium = Medium1, dp_nominal = 10, m_flow_nominal = m1_flow_nominal) annotation(
+    Placement(visible = true, transformation(origin = {160, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.RelativePressure senRelPreFilterSup(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {160, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  AixLib.Fluid.Sensors.RelativePressure senRelPreFilterExa(redeclare package Medium = Medium1) annotation(
+    Placement(visible = true, transformation(origin = {160, 100}, extent = {{10, 10}, {-10, -10}}, rotation = 0)));
+  AixLib.Fluid.FixedResistances.PressureDrop filterExa(redeclare package Medium = Medium1, dp_nominal = 10, m_flow_nominal = m1_flow_nominal) annotation(
+    Placement(visible = true, transformation(origin = {160, 80}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_a1(redeclare package Medium = Medium1, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {-310, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_b1(redeclare package Medium = Medium1, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {350, 0}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_a2(redeclare package Medium = Medium1, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {352, 80}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_b2(redeclare package Medium = Medium1, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {-310, 80}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_a3(redeclare package Medium = Medium2, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {-40, -130}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_b3(redeclare package Medium = Medium2, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {-60, -170}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_a4(redeclare package Medium = Medium2, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {0, -132}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_b4(redeclare package Medium = Medium2, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {-20, -172}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_a5(redeclare package Medium = Medium2, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {40, -132}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+  Modelica.Fluid.Sources.Boundary_pT boundary_b5(redeclare package Medium = Medium2, nPorts = 1) annotation(
+    Placement(visible = true, transformation(origin = {22, -172}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+protected
+  Modelica.Blocks.Continuous.FirstOrder PT1_airIn(initType = Modelica.Blocks.Types.Init.SteadyState, y_start = T_start, final T = tau) annotation(
+    Placement(visible = true, transformation(origin = {240, 20}, extent = {{4, -4}, {-4, 4}}, rotation = 270)));
+  Modelica.Blocks.Continuous.FirstOrder PT1_airIn1(initType = Modelica.Blocks.Types.Init.SteadyState, y_start = T_start, final T = tau) "Oda sensor delay" annotation(
+    Placement(visible = true, transformation(origin = {-140, 26}, extent = {{4, -4}, {-4, 4}}, rotation = 270)));
+  Modelica.Blocks.Continuous.FirstOrder PT1_airIn2(initType = Modelica.Blocks.Types.Init.SteadyState, y_start = T_start, final T = tau) annotation(
+    Placement(visible = true, transformation(origin = {-180, 106}, extent = {{4, -4}, {-4, 4}}, rotation = 270)));
+  Modelica.Blocks.Continuous.FirstOrder PT1_airIn3(initType = Modelica.Blocks.Types.Init.SteadyState, y_start = T_start, final T = tau) annotation(
+    Placement(visible = true, transformation(origin = {60, 102}, extent = {{4, -4}, {-4, 4}}, rotation = 270)));
+equation
+  connect(senTSup.T, PT1_airIn.u) annotation(
+    Line(points = {{240, 8.8}, {240, 14.8}}, color = {0, 0, 127}));
+  connect(senTExh.T, PT1_airIn2.u) annotation(
+    Line(points = {{-180, 91}, {-180, 101.2}}, color = {0, 0, 127}));
+  connect(senTRet.T, PT1_airIn3.u) annotation(
+    Line(points = {{60, 91}, {60, 97.2}}, color = {0, 0, 127}));
+  connect(preHeater.port_b1, cooler.port_a1) annotation(
+    Line(points = {{-40, 0}, {-20, 0}}, color = {0, 127, 255}));
+  connect(preHeater.port_b2, port_b3) annotation(
+    Line(points = {{-60, -12}, {-60, -100}}, color = {0, 127, 255}));
+  connect(preHeater.port_a2, port_a3) annotation(
+    Line(points = {{-40, -12}, {-40, -100}}, color = {0, 127, 255}));
+  connect(cooler.port_b2, port_b4) annotation(
+    Line(points = {{-20, -12}, {-20, -100}}, color = {0, 127, 255}));
+  connect(cooler.port_a2, port_a4) annotation(
+    Line(points = {{0, -12}, {0, -100}}, color = {0, 127, 255}));
+  connect(reHeater.port_a2, port_a5) annotation(
+    Line(points = {{40, -12}, {40, -100}}, color = {0, 127, 255}));
+  connect(reHeater.port_b2, port_b5) annotation(
+    Line(points = {{20, -12}, {20, -100}}, color = {0, 127, 255}));
+  connect(PT1_airIn1.y, genericAHUBus_extended.TOdaMea) annotation(
+    Line(points = {{-140, 30}, {-140, 52}, {-260, 52}, {-260, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(flapOda.y, genericAHUBus_extended.flapOdaSet) annotation(
+    Line(points = {{-220, 12}, {-220, 40}, {-272, 40}, {-272, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(flapOda.y_actual, genericAHUBus_extended.flapOdaMea) annotation(
+    Line(points = {{-215, 7}, {-215, 46}, {-266, 46}, {-266, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(flapEha.y_actual, genericAHUBus_extended.flapEhaMea) annotation(
+    Line(points = {{-225, 87}, {-225, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(flapEha.y, genericAHUBus_extended.flapEhaSet) annotation(
+    Line(points = {{-220, 92}, {-220, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(PT1_airIn2.y, genericAHUBus_extended.TEhaMea) annotation(
+    Line(points = {{-180, 110}, {-180, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(fanRet.dp_in, genericAHUBus_extended.dpFanEtaSet) annotation(
+    Line(points = {{120, 92}, {120, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(fanRet.dp_actual, genericAHUBus_extended.dpFanEtaMea) annotation(
+    Line(points = {{109, 85}, {100, 85}, {100, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(PT1_airIn3.y, genericAHUBus_extended.TEtaMea) annotation(
+    Line(points = {{60, 106}, {60, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(flapRet.y, genericAHUBus_extended.flapEtaSet) annotation(
+    Line(points = {{270, 92}, {270, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(reHeater.port_b1, fanSup.port_a) annotation(
+    Line(points = {{40, 0}, {60, 0}}, color = {0, 127, 255}));
+  connect(senRelHumSup.port_b, senTSup.port_a) annotation(
+    Line(points = {{226, 0}, {232, 0}}, color = {0, 127, 255}));
+  connect(senTSup.port_b, flapSup.port_a) annotation(
+    Line(points = {{248, 0}, {260, 0}}, color = {0, 127, 255}));
+  connect(flapSup.port_b, port_b1) annotation(
+    Line(points = {{280, 0}, {300, 0}}, color = {0, 127, 255}));
+  connect(senTOda.T, PT1_airIn1.u) annotation(
+    Line(points = {{-140, 11}, {-140, 21}}, color = {0, 0, 127}));
+  connect(dynamicHX.port_b2, preHeater.port_a1) annotation(
+    Line(points = {{-80, 0}, {-60, 0}}, color = {0, 127, 255}));
+  connect(port_a2, flapRet.port_a) annotation(
+    Line(points = {{300, 80}, {280, 80}}));
+  connect(senTExh.port_b, flapEha.port_a) annotation(
+    Line(points = {{-190, 80}, {-210, 80}}, color = {0, 127, 255}));
+  connect(flapEha.port_b, port_b2) annotation(
+    Line(points = {{-230, 80}, {-250, 80}}, color = {0, 127, 255}));
+  connect(humidifier.u, genericAHUBus_extended.humSetSup) annotation(
+    Line(points = {{189, 6}, {180, 6}, {180, 54}, {280, 54}, {280, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(filterOda.port_b, senTOda.port_a) annotation(
+    Line(points = {{-170, 0}, {-150, 0}}, color = {0, 127, 255}));
+  connect(senTOda.port_b, dynamicHX.port_a2) annotation(
+    Line(points = {{-130, 0}, {-120, 0}}, color = {0, 127, 255}));
+  connect(flapOda.port_b, filterOda.port_a) annotation(
+    Line(points = {{-210, 0}, {-190, 0}}, color = {0, 127, 255}));
+  connect(flapOda.port_a, port_a1) annotation(
+    Line(points = {{-230, 0}, {-250, 0}}, color = {0, 127, 255}));
+  connect(senRelPreFilterOda.port_a, filterOda.port_a) annotation(
+    Line(points = {{-190, -30}, {-200, -30}, {-200, 0}, {-190, 0}}, color = {0, 127, 255}));
+  connect(filterOda.port_b, senRelPreFilterOda.port_b) annotation(
+    Line(points = {{-170, 0}, {-160, 0}, {-160, -30}, {-170, -30}}, color = {0, 127, 255}));
+  connect(senTempSup1.port, dynamicHX.port_b2) annotation(
+    Line(points = {{-70, -20}, {-70, 0}, {-80, 0}}, color = {0, 127, 255}));
+  connect(cooler.port_b1, reHeater.port_a1) annotation(
+    Line(points = {{0, 0}, {20, 0}}, color = {0, 127, 255}));
+  connect(preHeater.port_b1, senTempSup2.port) annotation(
+    Line(points = {{-40, 0}, {-30, 0}, {-30, -20}}, color = {0, 127, 255}));
+  connect(senTempSup3.port, cooler.port_b1) annotation(
+    Line(points = {{10, -20}, {10, 0}, {0, 0}}, color = {0, 127, 255}));
+  connect(reHeater.port_b1, senTempSup4.port) annotation(
+    Line(points = {{40, 0}, {50, 0}, {50, -20}}, color = {0, 127, 255}));
+  connect(fanSup.port_b, senTempSup5.port) annotation(
+    Line(points = {{80, 0}, {90, 0}, {90, -20}}, color = {0, 127, 255}));
+  connect(fanSup.port_b, senEntFloSup.port_a) annotation(
+    Line(points = {{80, 0}, {100, 0}}, color = {0, 127, 255}));
+  connect(senPreSup.port, senEntFloSup.port_b) annotation(
+    Line(points = {{130, -20}, {130, 0}, {120, 0}}, color = {0, 127, 255}));
+  connect(senEntFloSup.port_b, filterSup.port_a) annotation(
+    Line(points = {{120, 0}, {150, 0}}, color = {0, 127, 255}));
+  connect(senRelPreFilterSup.port_a, filterSup.port_a) annotation(
+    Line(points = {{150, -30}, {146, -30}, {146, 0}, {150, 0}}, color = {0, 127, 255}));
+  connect(senRelPreFilterSup.port_b, filterSup.port_b) annotation(
+    Line(points = {{170, -30}, {176, -30}, {176, 0}, {170, 0}}, color = {0, 127, 255}));
+  connect(filterSup.port_b, humidifier.port_a) annotation(
+    Line(points = {{170, 0}, {190, 0}}, color = {0, 127, 255}));
+  connect(humidifier.port_b, senRelHumSup.port_a) annotation(
+    Line(points = {{210, 0}, {214, 0}}));
+  connect(senRelPreFilterExa.port_a, filterExa.port_a) annotation(
+    Line(points = {{170, 100}, {180, 100}, {180, 80}, {170, 80}}, color = {0, 127, 255}));
+  connect(filterExa.port_b, senRelPreFilterExa.port_b) annotation(
+    Line(points = {{150, 80}, {140, 80}, {140, 100}, {150, 100}}, color = {0, 127, 255}));
+  connect(fanRet.port_a, filterExa.port_b) annotation(
+    Line(points = {{130, 80}, {150, 80}}, color = {0, 127, 255}));
+  connect(filterExa.port_a, flapRet.port_b) annotation(
+    Line(points = {{170, 80}, {260, 80}}, color = {0, 127, 255}));
+  connect(senTRet.port_a, fanRet.port_b) annotation(
+    Line(points = {{70, 80}, {110, 80}}, color = {0, 127, 255}));
+  connect(dynamicHX.port_a1, senTRet.port_b) annotation(
+    Line(points = {{-80, 40}, {-80, 80}, {50, 80}}, color = {0, 127, 255}));
+  connect(fanRet.P, genericAHUBus_extended.powerFanRetMea) annotation(
+    Line(points = {{110, 90}, {104, 90}, {104, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(flapRet.y_actual, genericAHUBus_extended.flapEtaMea) annotation(
+    Line(points = {{265, 87}, {210, 87}, {210, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(fanSup.dp_in, genericAHUBus_extended.dpFanSupSet) annotation(
+    Line(points = {{70, 12}, {70, 60}, {310, 60}, {310, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(fanSup.P, genericAHUBus_extended.powerFanSupMea) annotation(
+    Line(points = {{82, 10}, {84, 10}, {84, 58}, {312, 58}, {312, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(fanSup.dp_actual, genericAHUBus_extended.dpFanSupMea) annotation(
+    Line(points = {{82, 6}, {86, 6}, {86, 56}, {314, 56}, {314, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(humidifier.powerEva, genericAHUBus_extended.powerSteamHumMea) annotation(
+    Line(points = {{212, 10}, {216, 10}, {216, 52}, {316, 52}, {316, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(senRelHumSup.phi, genericAHUBus_extended.relHumSupMea) annotation(
+    Line(points = {{220, 6}, {220, 50}, {318, 50}, {318, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(PT1_airIn.y, genericAHUBus_extended.TSupMea) annotation(
+    Line(points = {{240, 24}, {240, 48}, {320, 48}, {320, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(flapSup.y, genericAHUBus_extended.flapSupSet) annotation(
+    Line(points = {{270, 12}, {270, 46}, {322, 46}, {322, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(flapSup.y_actual, genericAHUBus_extended.flapSupMea) annotation(
+    Line(points = {{276, 8}, {278, 8}, {278, 44}, {324, 44}, {324, 120}, {0, 120}}, color = {0, 0, 127}));
+  connect(senTExh.port_a, dynamicHX.port_b1) annotation(
+    Line(points = {{-170, 80}, {-120, 80}, {-120, 40}}, color = {0, 127, 255}));
+  connect(boundary_b2.ports[1], port_b2) annotation(
+    Line(points = {{-300, 80}, {-250, 80}}, color = {0, 127, 255}));
+  connect(boundary_a1.ports[1], port_a1) annotation(
+    Line(points = {{-300, 0}, {-250, 0}}, color = {0, 127, 255}));
+  connect(boundary_b3.ports[1], port_b3) annotation(
+    Line(points = {{-60, -160}, {-60, -100}}, color = {0, 127, 255}));
+  connect(boundary_a3.ports[1], port_a3) annotation(
+    Line(points = {{-40, -120}, {-40, -100}}, color = {0, 127, 255}));
+  connect(boundary_b4.ports[1], port_b4) annotation(
+    Line(points = {{-20, -162}, {-20, -100}}, color = {0, 127, 255}));
+  connect(boundary_a4.ports[1], port_a4) annotation(
+    Line(points = {{0, -122}, {0, -100}}, color = {0, 127, 255}));
+  connect(boundary_b5.ports[1], port_b5) annotation(
+    Line(points = {{22, -162}, {20, -162}, {20, -100}}, color = {0, 127, 255}));
+  connect(boundary_a5.ports[1], port_a5) annotation(
+    Line(points = {{40, -122}, {40, -100}}, color = {0, 127, 255}));
+  connect(boundary_b1.ports[1], port_b1) annotation(
+    Line(points = {{340, 0}, {300, 0}}, color = {0, 127, 255}));
+  connect(boundary_a2.ports[1], port_a2) annotation(
+    Line(points = {{342, 80}, {300, 80}}, color = {0, 127, 255}));
+  annotation(
+    Icon(coordinateSystem(preserveAspectRatio = false, extent = {{-250, -100}, {300, 120}}), graphics = {Rectangle(origin = {0, 10}, fillColor = {170, 255, 127}, fillPattern = FillPattern.Solid, lineThickness = 1, extent = {{-200, 90}, {200, -90}}), Text(origin = {0, 10}, extent = {{-200, 90}, {200, -90}}, textString = "RLT TYP A1", fontSize = 72)}),
+    Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-250, -100}, {300, 120}})),
+    Documentation(revisions = "<html>
+<ul>
+<li>October 29, 2019, by Alexander K&uuml;mpel:<br/>First implementation</li>
+</ul>
+</html>", info = "<html>
+<p>The GenericAHU is an air-handling unit model with detailed hydraulic system of the preheater, heater and cooler. The ahu includes a heat exchanger for heat recovery and a humidifier for the supply air. The humidifier can be insert steam or water that evaporates completely (adiabatic). Further, the ahu includes an adiabatic humidifier in the return air chanal in order to cool the return air and use the heat recovery heat excahnger to cool the supply air. The preheater, steam humdifier and adiabatic humidifier are conditional and can be deactivated.</p>
+</html>"));
+end RLTTypA1;

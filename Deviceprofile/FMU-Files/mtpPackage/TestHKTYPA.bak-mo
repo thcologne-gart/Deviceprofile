@@ -1,0 +1,19 @@
+within mtpPackage;
+
+model TestHKTYPA
+
+  package Medium = AixLib.Media.Water;
+
+
+  mtpPackage.HKTYPA hktypa(redeclare package Medium = AixLib.Media.Water, redeclare package Medium1 = AixLib.Media.Water, redeclare package Medium2 = AixLib.Media.Water) annotation(
+    Placement(visible = true, transformation(origin = {0, -2}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
+  Modelica.Fluid.Sources.Boundary_pT boundaryin(redeclare package Medium = Medium, T = 289, nPorts = 1, p = 100000)  annotation(
+    Placement(visible = true, transformation(origin = {-120, 28}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Fluid.Sources.Boundary_pT boundaryOut(redeclare package Medium = Medium, nPorts = 1)  annotation(
+    Placement(visible = true, transformation(origin = {-120, -32}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+equation
+  connect(boundaryin.ports[1], hktypa.port_a1) annotation(
+    Line(points = {{-110, 28}, {-20, 28}, {-20, 8}}, color = {0, 127, 255}));
+  connect(hktypa.port_b2, boundaryOut.ports[1]) annotation(
+    Line(points = {{-20, -8}, {-20, -32}, {-110, -32}}, color = {0, 127, 255}));
+end TestHKTYPA;
